@@ -1,0 +1,93 @@
+<head>
+    <title>Test DataTables</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+{% extends "basic.html" %}
+
+{% block content %}
+<h2 class="mt-5">Chatbot Interface</h2>
+<form method="POST" action="{{ url_for('chatbot') }}" class="mt-3">
+    <div class="form-group">
+        <label for="prompt">Your Prompt:</label>
+        <textarea name="prompt" class="form-control" id="prompt" placeholder="Enter your prompt"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary" id="sendButton">Send</button>
+</form>
+
+<div class = 'container' style="padding:10%">
+<!-- Display Text Data -->
+{% if data.text %}
+    <div id="textData" class="mt-5">{{ data.text }}</div>
+{% endif %}
+</div>
+
+<div class = 'container' style="padding:10%">
+{% if data %}
+    <!-- Tables -->
+    {% if data.tables %}
+        {% for table in data.tables %}
+            <h3>{{ table.title }}</h3>
+            <table id="table{{ loop.index }}" class="display" style="width:100%">
+                <thead>
+                    <tr>
+                        {% for header in table.data[0] %}
+                            <th>{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in table.data %}
+                        {% if loop.index > 1 %} <!-- Skip the first row (headers) -->
+                            <tr>
+                                {% for cell in row %}
+                                    <td>{{ cell }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            <script>
+            $(document).ready(function() {
+                $('#table{{ loop.index }}').DataTable(table.options);
+                $('.display').DataTable();
+            });
+            </script>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<div class = 'container' style="padding:10%">
+    <!-- Charts -->
+    {% if data.charts %}
+        {% for chart in data.charts %}
+            <canvas id="chart{{ loop.index }}"></canvas>
+            <script>
+                var ctx = document.getElementById('chart{{ loop.index }}').getContext('2d');
+                new Chart(ctx, {
+                    type: '{{ chart.type }}',
+                    data: {{ chart.data | tojson }},
+                    options: {{ chart.options | tojson }}
+                });
+            </script>
+        {% endfor %}
+    {% endif %}
+{% endif %}
+        </div>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+

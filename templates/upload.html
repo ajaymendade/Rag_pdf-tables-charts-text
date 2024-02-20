@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload</title>
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+</head>
+
+<body>
+    {% extends "basic.html" %}
+
+    {% block content %}
+    <h2 class="mt-5">Upload PDFs</h2>
+    <form action="/upload" method="post" enctype="multipart/form-data" class="mt-3" id="uploadForm">
+        <div class="form-group">
+            <label for="pdfUpload">Select PDF files:</label>
+            <input type="file" class="form-control-file" id="pdfUpload" name="pdf" multiple>
+        </div>
+        <button type="submit" class="btn btn-primary" id="uploadButton" onclick="uploadPDFs()">Upload</button>
+        <button type="button" class="btn btn-primary d-none" id="loadingButton" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Processing...
+        </button>
+    </form>
+
+    <!-- Bootstrap Alert -->
+    <div id="alertMsg" class="alert alert-success mt-3" style="display: none;">
+        <strong>Success!</strong> <span id="alertText"></span>
+    </div>
+
+    <script>
+        function uploadPDFs() {
+            // Display loading button
+            $('#uploadButton').addClass('d-none');
+            $('#loadingButton').removeClass('d-none');
+
+            // Simulate processing delay (replace this with actual processing logic)
+            setTimeout(function () {
+                // Function to display Bootstrap alert
+                showAlert("PDFs processed successfully!");
+
+                // Hide loading button and show upload button again
+                $('#uploadButton').removeClass('d-none');
+                $('#loadingButton').addClass('d-none');
+            }, 3000);  // Replace 3000 with the actual processing time
+        }
+
+        // Function to display Bootstrap alert
+        function showAlert(message) {
+            console.log("showAlert function is running!");
+            $('#alertText').text(message);
+            $('#alertMsg').fadeIn().delay(7000).fadeOut();
+        }
+    </script>
+
+    {% endblock %}
+</body>
+
+</html>
