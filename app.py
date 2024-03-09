@@ -12,10 +12,10 @@ app = Flask(__name__)
 pdf_processor = PDFProcessor()
 
 openai_key = OpenAI(
-    api_key='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'
+    api_key=''  #openai_key
 )
 # Setup MongoDB client
-client = MongoClient('mongodb+srv://ragpdf:ragpdf@database.u3tj9jn.mongodb.net/')
+client = MongoClient('') #mongodb URL
 db = client.database 
 texts_collection = db.page_data
 images_collection = db.images
@@ -26,7 +26,6 @@ def save_vector_to_mongodb(collection, data):
     collection.insert_one(data)
 
 def similarity_search(prompt_vector):
-    # Assuming 'db.page_vectors' is your collection of page vectors
     similar_pages = db.page_data.aggregate([
         {
             "$vectorSearch": {
@@ -39,18 +38,15 @@ def similarity_search(prompt_vector):
         }
     ])
     
-    # Convert the cursor to a list and return
     return list(similar_pages)
 
 def parse_gpt_response(chat_response):
-    # Initialize containers for different types of queries
     text_queries, chart_queries, table_queries = [], [], []
     
-    # Split the response into sections based on predefined labels
     sections = chat_response.split("QUERIES:")
-    for section in sections[1:]:  # Skip the first split part, which is before the first label
+    for section in sections[1:]:  
         title, queries = section.strip().split(":", 1)
-        queries = queries.strip().split("\n")  # Assuming each query is on a new line
+        queries = queries.strip().split("\n")  
         
         if "TEXT" in title:
             text_queries.extend(queries)
@@ -75,8 +71,6 @@ def chatbot():
         prompt = request.form.get('prompt')
         print(prompt)
 
-        # Your existing code for processing the prompt and generating a GPT response
-        # For demonstration, this part is simplified
         prompt_vector = pdf_processor.vectorize_text(prompt)
         similar_pages = similarity_search(prompt_vector)
 
@@ -149,29 +143,25 @@ def chatbot():
                 
 @app.route('/upload', methods=['POST'])
 def upload_pdfs():
-    # Check if 'pdf' is present in the uploaded files
     if 'pdf' not in request.files:
         return 'No file part', 400
 
-    files = request.files.getlist('pdf')  # Get a list of files from the 'pdf' form name
+    files = request.files.getlist('pdf')  
 
     # Ensure there's at least one file selected
     if not files or files[0].filename == '':
         return 'No selected file', 400
 
     for file in files:
-        # You may want to check each file's extension here as well
-        if file:  # If there's a file and it's not an empty string
-            unique_key = str(uuid.uuid4())  # Generate a unique key for this PDF upload
+        if file: 
+            unique_key = str(uuid.uuid4())
             pdf_stream = BytesIO(file.read())
 
             processed_data = pdf_processor.process_pdf(pdf_stream, unique_key)
 
-            # Check if processed_data is None
             if processed_data is None:
                 return 'Error processing PDF', 500
 
-            # Iterate through processed data and save to MongoDB, including the unique_key
             if 'page_data' in processed_data:
                 for item in processed_data['page_data']:
                     texts_collection.insert_one(item)
@@ -182,7 +172,6 @@ def upload_pdfs():
                 for item in processed_data['tables_data']:
                     tables_collection.insert_one(item)
             print(unique_key)
-    # After all files are processed
     return render_template('upload.html', message='PDFs processed and data saved to MongoDB')
 
 
